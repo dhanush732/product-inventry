@@ -1,0 +1,82 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+const { id } = Astro.params;
+---
+<BaseLayout title={`Product ${id}`}> 
+  <section class="space-y-8" data-page="product-detail">
+    <div id="product-detail-root" class="space-y-6"></div>
+    <script type="module">
+      const id = "{id}";
+      const root = document.getElementById('product-detail-root');
+      async function load() {
+        const res = await fetch(`/api/products/${id}.json`);
+        if (!res.ok) { root.innerHTML = '<div class="text-red-400 text-sm">Product not found.</div>'; return; }
+        const p = await res.json();
+        root.innerHTML = `
+          <div class='flex flex-col md:flex-row gap-10'>
+            <div class='md:w-1/2 space-y-4'>
+              <div class='aspect-[4/3] rounded-xl overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center'>
+                ${p.imageUrl ? `<img src='${p.imageUrl}' alt='${p.name}' class='w-full h-full object-cover' />` : `<span class='text-slate-500 text-xs'>NO IMAGE</span>`}
+              </div>
+            </div>
+            <div class='flex-1 space-y-6'>
+              <div>
+                <h1 class='text-3xl font-bold tracking-tight mb-2'>${p.name}</h1>
+                <p class='text-slate-400 text-sm leading-relaxed max-w-prose'>${p.description || 'No description provided.'}</p>
+              </div>
+              <div class='flex items-center gap-6 text-sm'>
+                <span class='px-3 py-1 rounded bg-primary-500/10 text-primary-300 font-semibold'>${p.currency} ${Number(p.price).toFixed(2)}</span>
+                <span class='text-slate-400'>Stock: ${p.stock}</span>
+                ${p.category ? `<span class='text-slate-400'>Category: ${p.category}</span>`: ''}
+              </div>
+              <div class='flex gap-3'>
+                <a href='/products' class='btn-outline'>Back</a>
+                <button id='editBtn' class='btn-primary'>Edit</button>
+                <button id='deleteBtn' class='btn-outline border-red-500 text-red-400 hover:bg-red-500/10'>Delete</button>
+              </div>
+              <form id='editForm' class='hidden space-y-4 bg-white/5 border border-white/10 rounded-xl p-6'>
+                <div class='grid gap-4 md:grid-cols-2'>
+                  <div><label class='block text-xs font-medium mb-1'>Name</label><input name='name' class='input' required value='${p.name}' /></div>
+                  <div><label class='block text-xs font-medium mb-1'>Price</label><input type='number' step='0.01' name='price' class='input' required value='${p.price}' /></div>
+                  <div><label class='block text-xs font-medium mb-1'>Currency</label><input name='currency' maxlength='3' class='input' required value='${p.currency}' /></div>
+                  <div><label class='block text-xs font-medium mb-1'>Stock</label><input type='number' name='stock' class='input' value='${p.stock}' /></div>
+                  <div class='md:col-span-2'><label class='block text-xs font-medium mb-1'>Category</label><input name='category' class='input' value='${p.category || ''}' /></div>
+                  <div class='md:col-span-2'><label class='block text-xs font-medium mb-1'>Image URL</label><input name='imageUrl' class='input' value='${p.imageUrl || ''}' /></div>
+                  <div class='md:col-span-2'><label class='block text-xs font-medium mb-1'>Description</label><textarea name='description' class='input h-32'>${p.description || ''}</textarea></div>
+                </div>
+                <div class='flex gap-3'>
+                  <button class='btn-primary flex-1' type='submit'>Save Changes</button>
+                  <button type='button' id='cancelEdit' class='btn-outline'>Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>`;
+        attachHandlers();
+      }
+      function attachHandlers() {
+        const editBtn = document.getElementById('editBtn');
+        const deleteBtn = document.getElementById('deleteBtn');
+        const form = document.getElementById('editForm');
+        const cancelEdit = document.getElementById('cancelEdit');
+        editBtn?.addEventListener('click', ()=> { form?.classList.remove('hidden'); editBtn.classList.add('hidden'); });
+        cancelEdit?.addEventListener('click', ()=> { form?.classList.add('hidden'); document.getElementById('editBtn')?.classList.remove('hidden'); });
+        deleteBtn?.addEventListener('click', async ()=> {
+          if (!confirm('Delete this product?')) return;
+          const r = await fetch(`/api/products/${id}.json`, { method: 'DELETE' });
+            if (r.ok) window.location.href='/products'; else alert('Delete failed');
+        });
+        form?.addEventListener('submit', async (e)=> {
+          e.preventDefault();
+          const fd = new FormData(form as HTMLFormElement);
+          const data: any = {};
+          fd.forEach((v,k)=> data[k] = v);
+          data.price = Number(data.price);
+          data.stock = Number(data.stock||0);
+          const r = await fetch(`/api/products/${id}.json`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+          if (r.ok) { load(); } else alert('Save failed');
+        });
+      }
+      load();
+    </script>
+  </section>
+</BaseLayout>

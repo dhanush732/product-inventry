@@ -1,0 +1,156 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Login - Product Inventory Management">
+  <div class="flex items-center justify-center min-h-screen">
+    <div class="bg-white dark:bg-gray-800 p-8 rounded shadow-md w-full max-w-md">
+      <div class="flex justify-end mb-4">
+        <button id="theme-toggle" class="p-2 rounded-md text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white focus:outline-none">
+          <!-- Sun icon for dark mode -->
+          <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+          <!-- Moon icon for light mode -->
+          <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+        </button>
+      </div>
+      
+      <h2 class="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">Admin Login</h2>
+      
+      <div id="error-message" class="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-4 hidden">
+        Invalid username or password
+      </div>
+      
+      <form id="login-form" class="space-y-6">
+        <div>
+          <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
+          <input type="text" id="username" name="username" required 
+                 class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+        </div>
+        
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+          <input type="password" id="password" name="password" required 
+                 class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+        </div>
+        
+        <div class="flex items-center">
+          <input id="remember-me" name="remember-me" type="checkbox" 
+                 class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded">
+          <label for="remember-me" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+            Remember me
+          </label>
+        </div>
+        
+        <div>
+          <button type="submit" 
+                  class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+            Sign in
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // Default admin credentials
+  const ADMIN_USERNAME = "admin";
+  const ADMIN_PASSWORD = "admin123";
+  
+  // Initialize dark mode based on localStorage or system preference
+  function initializeTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const sunIcon = document.getElementById('sun-icon');
+    const moonIcon = document.getElementById('moon-icon');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const html = document.documentElement;
+    
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+      html.classList.add('dark');
+      moonIcon.classList.add('hidden');
+      sunIcon.classList.remove('hidden');
+    } else {
+      html.classList.remove('dark');
+      sunIcon.classList.add('hidden');
+      moonIcon.classList.remove('hidden');
+    }
+  }
+  
+  // Toggle dark mode
+  function toggleTheme() {
+    const isDark = document.documentElement.classList.contains('dark');
+    const sunIcon = document.getElementById('sun-icon');
+    const moonIcon = document.getElementById('moon-icon');
+    
+    if (isDark) {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+      sunIcon.classList.add('hidden');
+      moonIcon.classList.remove('hidden');
+    } else {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+      moonIcon.classList.add('hidden');
+      sunIcon.classList.remove('hidden');
+    }
+  }
+  
+  // Handle form submission
+  const loginForm = document.getElementById('login-form');
+  const errorMessage = document.getElementById('error-message');
+  
+  if (loginForm) {
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const rememberMe = document.getElementById('remember-me')?.checked || false;
+      
+      // Check credentials
+      if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+        // Hide any previous error
+        errorMessage.classList.add('hidden');
+        
+        // Store authentication state
+        localStorage.setItem('isAuthenticated', 'true');
+        
+        if (rememberMe) {
+          localStorage.setItem('rememberMe', 'true');
+        } else {
+          localStorage.removeItem('rememberMe');
+        }
+        
+        // Redirect to products page
+        window.location.href = '/products';
+      } else {
+        // Show error message
+        errorMessage.classList.remove('hidden');
+        document.getElementById('password').value = '';
+      }
+    });
+  }
+  
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    initializeTheme();
+    
+    // Add event listener for theme toggle
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+      themeToggle.addEventListener('click', toggleTheme);
+    }
+    
+    // Check if user is already logged in
+    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+    
+    if (isAuthenticated) {
+      // Redirect to products page if already logged in
+      window.location.href = '/products';
+    }
+  });
+</script>

@@ -1,0 +1,51 @@
+---
+interface Props { title?: string }
+const { title = 'Product Inventory Management' } = Astro.props;
+---
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body class="h-full font-sans bg-slate-950 text-white dark:bg-gray-900">
+    <header class="p-4 border-b border-white/10 shadow-sm">
+      <div class="max-w-7xl mx-auto flex items-center justify-between">
+        <h1 class="text-xl font-semibold tracking-tight flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary-400"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect><path d="M16 16h.01"></path><path d="M8 16h.01"></path><path d="M8 8h.01"></path><path d="M16 8h.01"></path></svg>
+          <span>Product <span class="text-primary-400">Inventory</span></span>
+        </h1>
+        <div class="flex items-center space-x-4">
+          <button id="logout-btn" class="hidden px-4 py-2 text-sm text-white bg-red-600 rounded hover:bg-red-700">
+            Logout
+          </button>
+        </div>
+      </div>
+    </header>
+    <main class="max-w-7xl mx-auto px-4 py-6">
+      <slot />
+    </main>
+    <footer class="text-center text-xs text-slate-500 pb-6">Product Inventory Management System</footer>
+  </body>
+</html>
+
+<script>
+  // Check if the user is authenticated
+  document.addEventListener('DOMContentLoaded', () => {
+    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+    const logoutBtn = document.getElementById('logout-btn');
+    
+    // Show logout button if authenticated
+    if (isAuthenticated && logoutBtn) {
+      logoutBtn.classList.remove('hidden');
+      
+      // Add logout functionality
+      logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('rememberMe');
+        window.location.href = '/';
+      });
+    }
+  });
+</script>
