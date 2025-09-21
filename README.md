@@ -94,15 +94,6 @@ PUT /api/products/[id]
 DELETE /api/products/[id]
 ```
 
-### Cart
-
-```http
-GET /api/carts/[id]
-POST /api/carts
-POST /api/carts/[id]/items
-DELETE /api/carts/[id]/items/[productId]
-```
-
 ## Future Enhancements
 
 - Add user management with different permission levels
